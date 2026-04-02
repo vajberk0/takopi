@@ -222,6 +222,28 @@ def test_session_path_prefers_run_base_dir(tmp_path: Path) -> None:
     assert str(session_root) in session_path
 
 
+def test_translate_thinking_fixture() -> None:
+    state = PiStreamState(resume=ResumeToken(engine=ENGINE, value="session.jsonl"),
+                          allow_id_promotion=True)
+    events: list = []
+    for event in _load_fixture("pi_stream_thinking.jsonl"):
+        events.extend(translate_pi_event(event, title="pi", meta=None, state=state))
+
+    note_events = [
+        evt for evt in events
+        if isinstance(evt, ActionEvent) and evt.action.kind == "note"
+    ]
+    assert len(note_events) == 1
+    assert note_events[0].action.title == "The user wants to say hello."
+    assert note_events[0].action.id == "pi.thinking.1"
+    assert note_events[0].phase == "completed"
+    assert note_events[0].ok is True
+
+    completed = next(evt for evt in events if isinstance(evt, CompletedEvent))
+    assert completed.ok is True
+    assert completed.answer == "Hello!"
+
+
 def test_session_path_sanitizes_windows_separators() -> None:
     cwd = PureWindowsPath("C:\\foo\\bar")
     session_dir = _default_session_dir(cwd)

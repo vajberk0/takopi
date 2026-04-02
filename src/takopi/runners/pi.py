@@ -224,6 +224,26 @@ def translate_pi_event(
                 )
             return out
 
+        case pi_schema.MessageUpdate(assistantMessageEvent=event_data):
+            if isinstance(event_data, dict) and event_data.get("type") == "thinking_end":
+                thinking = event_data.get("content")
+                if isinstance(thinking, str) and thinking.strip():
+                    state.note_seq += 1
+                    action_id = f"pi.thinking.{state.note_seq}"
+                    out.append(
+                        _action_event(
+                            phase="completed",
+                            action=Action(
+                                id=action_id,
+                                kind="note",
+                                title=thinking.strip(),
+                                detail={},
+                            ),
+                            ok=True,
+                        )
+                    )
+            return out
+
         case pi_schema.MessageEnd(message=message):
             if isinstance(message, dict) and message.get("role") == "assistant":
                 text = _extract_text_blocks(message.get("content"))
