@@ -1,5 +1,11 @@
 # changelog
 
+## v0.22.4 (2026-05-15)
+
+### fixes
+
+- show resume lines on queued Telegram continuation messages [#234](https://github.com/banteg/takopi/pull/234)
+
 ## v0.22.3 (2026-03-02)
 
 ### changes
